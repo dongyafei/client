@@ -1,15 +1,16 @@
-import * as React from 'react'
-import * as Types from '../constants/types/people'
-import * as Kb from '../common-adapters'
-import * as Styles from '../styles'
+import Announcement from './announcement/container'
+import FollowNotification from './follow-notification'
+import FollowSuggestions from './follow-suggestions'
+import Todo from './todo/container'
+import WotTask from './wot-task/container'
 import * as Container from '../util/container'
+import * as Kb from '../common-adapters'
+import * as React from 'react'
 import * as PeopleGen from '../actions/people-gen'
 import * as SignupGen from '../actions/signup-gen'
+import * as Styles from '../styles'
+import * as Types from '../constants/types/people'
 import {noEmail} from '../constants/signup'
-import Todo from './todo/container'
-import FollowNotification from './follow-notification'
-import Announcement from './announcement/container'
-import FollowSuggestions from './follow-suggestions'
 import {Props} from '.'
 
 export const itemToComponent: (item: Types.PeopleScreenItem, props: Props) => React.ReactNode = (
@@ -58,6 +59,18 @@ export const itemToComponent: (item: Types.PeopleScreenItem, props: Props) => Re
       )
   }
   return null
+}
+
+export const itemToWotComponent: (item: Types.WotUpdate, props: Props) => React.ReactNode = (item, props) => {
+  return (
+    <WotTask
+      voucher={item.voucher}
+      vouchee={item.vouchee}
+      status={item.status}
+      key={JSON.stringify(item)}
+      onClickUser={props.onClickUser}
+    />
+  )
 }
 
 const EmailVerificationBanner = () => {
@@ -113,6 +126,7 @@ export const PeoplePageList = (props: Props) => (
     {props.newItems
       .filter(item => item.type !== 'todo' || item.todoType !== 'verifyAllEmail' || !props.signupEmail)
       .map(item => itemToComponent(item, props))}
+    {props.wotUpdates.map(item => itemToWotComponent(item, props))}
     <FollowSuggestions suggestions={props.followSuggestions} />
     {props.oldItems.map(item => itemToComponent(item, props))}
   </Kb.Box>

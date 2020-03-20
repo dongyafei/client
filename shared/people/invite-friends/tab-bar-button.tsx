@@ -2,12 +2,24 @@ import * as React from 'react'
 import * as Kb from '../../common-adapters'
 import * as Styles from '../../styles'
 import * as Container from '../../util/container'
+import * as RPCGen from '../../constants/types/rpc-gen'
 
 const InviteFriends = () => {
-  // TODO: useRPC to get this data
-  const num = 1640
-  const percentage = 154
-  const showFire = true
+  const getInviteCounts = Container.useRPC(RPCGen.inviteFriendsGetInviteCountsRpcPromise)
+  const [invitesCount, setInvitesCount] = React.useState<number | null>(null)
+  const [percentage, setPercentage] = React.useState(0)
+  const [showFire, setShowFire] = React.useState(false)
+  React.useEffect(() => {
+    getInviteCounts(
+      [undefined], // Is this really the best way to call an RPC with no args?
+      r => {
+        setInvitesCount(r.inviteCount)
+        setPercentage(r.percentageChange)
+        setShowFire(r.showFire)
+      },
+      () => {}
+    )
+  }, [setShowFire, setPercentage, setInvitesCount]) // TODO: consider refreshing each hour/day/etc
 
   const dispatch = Container.useDispatch()
   const nav = Container.useSafeNavigation()
@@ -15,23 +27,26 @@ const InviteFriends = () => {
     dispatch(nav.safeNavigateAppendPayload({path: [{selected: 'inviteFriendsModal'}]}))
 
   const inviteButton = <Kb.Button small={true} label="Invite friends" onClick={onInviteFriends} />
-  const inviteCounter = (
-    <Kb.Box2 direction="horizontal" gap="tiny" centerChildren={true}>
-      <Kb.Icon type="iconfont-envelope" sizeType="Small" color={Styles.globalColors.blueDarkerOrBlack_85} />
-      <Kb.Text type="BodySmallBold" style={styles.counter}>
-        {num.toLocaleString()} {showFire ? <Kb.Emoji emojiName="fire" size={12} /> : null}
-      </Kb.Text>
-    </Kb.Box2>
-  )
-  const firstTooltipLine = `${num.toLocaleString()} friends invited in the last 24 hours.`
+  const inviteCounter =
+    invitesCount === null ? null : (
+      <Kb.Box2 direction="horizontal" gap="tiny" centerChildren={true}>
+        <Kb.Icon type="iconfont-envelope" sizeType="Small" color={Styles.globalColors.blueDarkerOrBlack_85} />
+        <Kb.Text type="BodySmallBold" style={styles.counter}>
+          {invitesCount.toLocaleString()} {showFire ? <Kb.Emoji emojiName="fire" size={12} /> : null}
+        </Kb.Text>
+      </Kb.Box2>
+    )
+  const firstTooltipLine = `${invitesCount?.toLocaleString()} friends invited in the last 24 hours.`
   return Styles.isMobile ? (
     <Kb.Box2 direction="horizontal" fullWidth={true} style={styles.mobileContainer}>
       <Kb.Box style={Styles.globalStyles.flexOne} />
       {inviteButton}
       <Kb.Box2 direction="horizontal" style={styles.inviteCounterBox}>
-        <Kb.WithTooltip tooltip={firstTooltipLine} showOnPressMobile={true}>
-          {inviteCounter}
-        </Kb.WithTooltip>
+        {invitesCount === null ? null : (
+          <Kb.WithTooltip tooltip={firstTooltipLine} showOnPressMobile={true}>
+            {inviteCounter}
+          </Kb.WithTooltip>
+        )}
       </Kb.Box2>
     </Kb.Box2>
   ) : (

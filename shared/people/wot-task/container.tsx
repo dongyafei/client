@@ -23,10 +23,10 @@ const mergeProps = (stateProps, dispatchProps, ownProps: OwnProps) => {
   const otherUser =
     stateProps.myUsername.localeCompare(ownProps.voucher) === 0 ? ownProps.vouchee : ownProps.voucher
   return {
-    ...dispatchProps,
     badged: true,
     key: ownProps.key,
     onClickUser: ownProps.onClickUser,
+    onDismiss: dispatchProps.onDismiss,
     otherUser: otherUser,
     userForIcon: otherUser,
     vouchee: ownProps.vouchee,
